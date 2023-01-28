@@ -130,4 +130,4 @@ dmypy.json
 
 # individual files
 *.temp.ipynb
-scratchpad/*
+distributed_video/scratchpad/*

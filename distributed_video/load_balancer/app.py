@@ -2,29 +2,31 @@ from flask import Flask, request
 from http import HTTPStatus
 from flask import Response
 import json
-from flask_socketio import SocketIO, send, emit
+from libs.utils import MediaUtils
+from decouple import config, Csv
+from pathlib import Path
+import time
+import uuid
+import os
 
 
 app = Flask("load_balancer")
-socketio = SocketIO(app)
 
 @app.route("/test", methods=['GET', 'POST'])
-def index():
+def test():
     request_dict = request.json
     return Response(json.dumps(request_dict), HTTPStatus.OK, mimetype='application/json')
 
-@app.route("/video-upload", methods=["POST"])
-def forward():
-    request_dict = request.json
-    frame_transfer(request_dict)
-    return Response('Received the event')
-
-@socketio.on('frame_transfer')
-def frame_transfer(request_dict):
-    send(request_dict, namespace='/frame-transfer', to=1)
-
-# def ack():
-#     print('Received message confirmation from the node :)')
+@app.route("/test2", methods=["POST"])
+def test2():
+    uploded_file = request.files.get('file')
+    request_dict = request.form
+    file_name, ext = os.path.splitext(request_dict.get('file_name'))
+    file_name = f'{file_name}__{time.strftime("%Y%m%d_%H%M%S")}.{ext}'
+    MediaUtils.save_video(uploded_file, Path(f'media/{file_name}'))
+    task_id = str(uuid.uuid4())
+    response_dict = {'task_id': task_id}
+    return Response(json.dumps(response_dict), HTTPStatus.OK, mimetype='application/json')
 
 if __name__ == '__main__':
-    socketio.run(app, port=5000)
+    app.run(port=5000, debug=True)
