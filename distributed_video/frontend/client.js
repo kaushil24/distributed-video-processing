@@ -18,7 +18,7 @@ function uploadFile() {
     console.log(reader);
     let fileName = selectedFile.name.replace(/[.].*/, '');
     const randomId = Math.floor(Math.random() * 9000 + 1000);
-    fileName = fileName + "_" + randomId
+    fileName = fileName + "_" + randomId + '_'
     console.log(fileName);
 
 }

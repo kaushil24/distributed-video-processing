@@ -9,6 +9,10 @@ import os
 import zmq
 import re
 import base64
+import subprocess
+import shlex
+import json
+import cv2
 
 app = Flask("load_balancer")
 
@@ -27,10 +31,49 @@ def test2():
     consumer_receiver.bind("tcp://127.0.0.1:6000")
 
     data = request.json
+    fileName = data['fileName']
+    fileNameWithPath = './../inputDump/'+data['fileName']+'.mp4'
     byteString = re.sub("^.*,", "", data['video'])
     videoData = base64.b64decode(byteString)
-    with open('output.mp4', "wb") as out_file:  # open for [w]riting as [b]inary
-        out_file.write(videoData)
+    with open(fileNameWithPath, "wb") as out_file:  # open for [w]riting as [b]inary
+        out_file.write(videoData)  
+    # print(fileName)
+    # cmd = "ffprobe -v quiet -print_format json -show_streams"
+    # args = shlex.split(cmd)
+    # args.append(fileName)
+    # run the ffprobe process, decode stdout into utf-8 & convert to JSON
+    # ffprobeOutput = subprocess.check_output(args).decode('utf-8')
+    # ffprobeOutput = json.loads(ffprobeOutput)  
+    # frameCount = ffprobeOutput['streams'][0]['nb_frames'] 
+    cam = cv2.VideoCapture(fileNameWithPath)
+
+    currentframe = 0
+    tasks = []
+  
+    while(True):
+        
+        # reading from frame
+        ret,frame = cam.read()
+    
+        if ret:
+            # if video is still left continue creating images
+            name = './../imageDump/' + fileName + '_' + str(currentframe) + '.jpg'
+    
+            # writing the extracted images
+            cv2.imwrite(name, frame)
+            tasks.append(fileName+ '_' + str(currentframe))
+            # increasing counter so that it will
+            # show how many frames are created
+            currentframe += 1
+        else:
+            break
+    
+    # Release all space and windows once done
+    print(tasks[0])
+    cam.release()
+    cv2.destroyAllWindows()
+
+
     # task_id = str(uuid.uuid4())
     response_dict = {'task_id': "asndkasnd3242qwsed"}
     # tasks = ["task1", "task2", "task3"]
