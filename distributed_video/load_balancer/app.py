@@ -69,23 +69,19 @@ def test2():
             break
     
     # Release all space and windows once done
-    print(tasks[0])
     cam.release()
     cv2.destroyAllWindows()
 
-
-    # task_id = str(uuid.uuid4())
     response_dict = {'task_id': "asndkasnd3242qwsed"}
-    # tasks = ["task1", "task2", "task3"]
-    # for task in tasks:
-    #     work_message = { 'task' : task }
-    #     zmq_socket.send_json(work_message)
-    # while len(tasks) is not 0:
-    #     print("done Sending")    
-    #     work = consumer_receiver.recv_json()
-    #     data = work['data']
-    #     print(data)
-    #     tasks.remove(data)
+    for task in tasks:
+        work_message = { 'task' : task }
+        zmq_socket.send_json(work_message)
+    while len(tasks) is not 0:
+        print("done Sending")    
+        work = consumer_receiver.recv_json()
+        data = work['data']
+        print(data)
+        tasks.remove(data)
 
     return Response(json.dumps(response_dict), HTTPStatus.OK, mimetype='application/json')
 

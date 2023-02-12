@@ -36,7 +36,7 @@ def consumer():
     while True:
         work = consumer_receiver.recv_json()
         data = work['task']
-        time.sleep(1)
+        time.sleep(0.2)
         print(data)
         result = { 'data' : data}
         consumer_sender.send_json(result)
