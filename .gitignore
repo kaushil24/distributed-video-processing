@@ -133,5 +133,5 @@ dmypy.json
 distributed_video/scratchpad/*
 
 # media files
-.mp4
-.jpg
+*.mp4
+*.jpg
