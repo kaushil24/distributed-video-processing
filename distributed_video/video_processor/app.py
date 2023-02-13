@@ -8,6 +8,7 @@
 # import json
 import zmq
 import time
+
 # from flask_socketio import SocketIO, send
 
 # app = Flask("video_processor")
@@ -22,6 +23,7 @@ import time
 #     print(f'received message: {message_json}')
 #     send({'status': 'Message received successfully'}, json=True)
 
+
 def consumer():
     # consumer_id = random.randrange(1,10005)
     # print "I am consumer #%s" % (consumer_id)
@@ -32,13 +34,13 @@ def consumer():
     # send work
     consumer_sender = context.socket(zmq.PUSH)
     consumer_sender.connect("tcp://127.0.0.1:5558")
-    
+
     while True:
         work = consumer_receiver.recv_json()
-        data = work['task']
+        data = work["task"]
         time.sleep(0.2)
         print(data)
-        result = { 'data' : data}
+        result = {"data": data}
         consumer_sender.send_json(result)
 
 

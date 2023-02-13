@@ -1,6 +1,5 @@
-import time
 import zmq
-import pprint
+
 
 def result_collector():
     context = zmq.Context()
