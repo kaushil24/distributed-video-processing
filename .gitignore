@@ -127,3 +127,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# individual files
+*.temp.ipynb
+distributed_video/scratchpad/*
+
+# media files
+*.mp4
+*.jpg
