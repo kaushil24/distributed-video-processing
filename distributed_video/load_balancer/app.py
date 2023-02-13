@@ -7,6 +7,12 @@ import re
 import base64
 import json
 import cv2
+import time
+import os
+from distributed_video.libs.utils import MediaUtils
+import uuid
+from pathlib import Path
+from distributed_video.load_balancer.load_balancer import LoadBalancer
 
 app = Flask("load_balancer")
 
@@ -83,6 +89,19 @@ def test2():
     return Response(
         json.dumps(response_dict), HTTPStatus.OK, mimetype="application/json"
     )
+
+
+@app.route("/apply-filter", methods=["POST"])
+def apply_filter():
+    uploded_file = request.files.get("file")
+    request_dict = request.form
+    file_name, ext = os.path.splitext(request_dict.get("file_name"))
+    file_name = f'{file_name}__{time.strftime("%Y%m%d_%H%M%S")}.{ext}'
+    video_path = MediaUtils.save_video(uploded_file, Path(f"media/{file_name}"))
+    lb = LoadBalancer(video_path=video_path)
+    lb.distribute_video()
+    task_id = str(uuid.uuid4())
+    response_dict = {"task_id": task_id}
 
 
 if __name__ == "__main__":

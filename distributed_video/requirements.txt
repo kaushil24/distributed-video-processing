@@ -4,3 +4,4 @@ opencv-python
 celery
 requests
 pre-commit
+pyzmq
