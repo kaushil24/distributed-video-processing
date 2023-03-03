@@ -1,54 +1,55 @@
-# from flask import Flask, request
-from http import HTTPStatus
-
-# from flask import Response
-# import json
 from flask import Flask
+from flask import Response
+from celery import Celery
 from http import HTTPStatus
-
-# from flask_socketio import SocketIO, send
-
-app = Flask("video_processor")
-
-
-@app.route("/process-frame", methods=["POST"])
-def process_frame():
-    return HTTPStatus.OK
+import zmq
+import time
+from urllib import parse
 
 
-# @app.route("/upload-video", methods=['POST'])
-# def index():
-#     request_dict = request.json
-#     return Response(json.dumps(request_dict), HTTPStatus.OK)
+# @todo: Since we're starting only one node here, the variables are hard-coded
+# once I have the start-node.sh configured, it should read from env-vars.
+# Refer start-node.sh for more info
+REQ_SOCKET_URL = "127.0.0.1:9008"  # {os.environ.get('REQ_SOCKET_URL')}
+RESP_SOCKET_URL = "127.0.0.1:9069"  # {os.environ.get('RESP_SOCKET_URL')}
+RABBIT_MQ_URL = "amqp://localhost:5679"
+NODE_URL = "http://0.0.0.0:5001"
 
-# @socketio.on('frame_transfer', namespace='/frame-transfer')
-# def frame_transfer(message_json):
-#     print(f'received message: {message_json}')
-#     send({'status': 'Message received successfully'}, json=True)
-
-
-# def consumer():
-#     # consumer_id = random.randrange(1,10005)
-#     # print "I am consumer #%s" % (consumer_id)
-#     context = zmq.Context()
-#     # recieve work
-#     consumer_receiver = context.socket(zmq.PULL)
-#     consumer_receiver.connect("tcp://127.0.0.1:5557")
-#     # send work
-#     consumer_sender = context.socket(zmq.PUSH)
-#     consumer_sender.connect("tcp://127.0.0.1:5558")
-
-#     while True:
-#         work = consumer_receiver.recv_json()
-#         data = work["task"]
-#         time.sleep(0.2)
-#         print(data)
-#         result = {"data": data}
-#         consumer_sender.send_json(result)
+app = Flask(__name__)
+app.config["CELERY_BROKER_URL"] = RABBIT_MQ_URL
+celery = Celery(app.name, broker=app.config["CELERY_BROKER_URL"])
+celery.conf.update(app.config)
 
 
-# consumer()
+@celery.task
+def consumer():
+    print("Starting the socket.......")
+    context = zmq.Context()
+    # recieve work
+    consumer_receiver = context.socket(zmq.PULL)
+    consumer_receiver.connect(f"tcp://{REQ_SOCKET_URL}")
+    # send work
+    consumer_sender = context.socket(zmq.PUSH)
+    consumer_sender.connect(f"tcp://{RESP_SOCKET_URL}")
+    print(f"Receiving socket url: {REQ_SOCKET_URL}")
+    print(f"Sender socket url: {RESP_SOCKET_URL}")
+
+    while True:
+        print("rec new messages")
+        work = consumer_receiver.recv_json()
+        data = work["task"]
+        time.sleep(0.2)
+        print(data)
+        result = {"data": data}
+        consumer_sender.send_json(result)
 
 
-# if __name__ == '__main__':
-#     app.run(port=80085, debug=True)
+@app.route("/health-check", methods=["GET", "POST"])
+def health_check():
+    return Response(HTTPStatus.OK)
+
+
+if __name__ == "__main__":
+    consumer.apply_async()
+    up = parse.urlparse(NODE_URL)
+    app.run(debug=True, host=up.hostname, port=up.port)

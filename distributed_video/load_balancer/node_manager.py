@@ -4,17 +4,23 @@ from decouple import config, Csv
 
 
 class Node:
-    def _bind_socket(self) -> zmq.Socket:
+    def bind_socket(self) -> zmq.Socket:
         context = zmq.Context()
         self.socket = context.socket(zmq.PUSH)
-        self.socket.bind(f"tcp://{self.recv_socket_url}")
+        try:
+            self.socket.bind(f"tcp://{self.req_socket_url}")
+        except zmq.ZMQError as zqme:
+            print("Port already binded")
 
-    def __init__(self, base_url: str, recv_socket_url: str) -> None:
-        # recv_socket_url is the url on which this node is expceted to recieve incoming messages
-        # aka the url on which the LB is expected to push the messages for  that node to listen
+    def __init__(self, base_url: str, req_socket_url: str) -> None:
+        # req_socket_url is the url on which this node is expceted to recieve incoming (requests) messages
+        # aka the url on which the LB is expected to push the messages for that node to listen
         self.base_url = base_url
-        self.recv_socket_url = recv_socket_url
-        self._bind_socket()
+        self.req_socket_url = req_socket_url
+        self.bind_socket()
+
+    def close_socket(self):
+        self.socket.close()
 
 
 class NodesDirectory:
@@ -29,12 +35,29 @@ class NodesDirectory:
     @staticmethod
     def node_discovery() -> List[Node]:
         # @todo: Implement health check before discovery
-        recv_socket_urls = config("RECV_SOCKET_PORTS", cast=Csv())
+        req_socket_url = config("REQ_SOCKET_URLS", cast=Csv())
         nodes_urls = config("NODES", cast=Csv())
         nodes = []
-        for node_url, socket_url in zip(nodes_urls, recv_socket_urls):
+        for node_url, socket_url in zip(nodes_urls, req_socket_url):
             nodes.append(Node(node_url, socket_url))
         return nodes
 
+    def send_json(self, *args, **kwargs):
+        """
+        Wrapper over socket.send_json(). It picks the socket pointed
+        by the next
+        """
+        resp = self.nodes[self.next_node_index].socket.send_json(*args, **kwargs)
+        self.increment_next_node_index()
+        return resp
+
     def increment_next_node_index(self) -> None:
         self.next_node_index = (self.next_node_index + 1) % self.num_nodes
+
+    def close_all_sockets(self):
+        for node in self.nodes:
+            node.close_socket()
+
+    def bind_all_sockets(self):
+        for node in self.nodes:
+            node.bind_socket()

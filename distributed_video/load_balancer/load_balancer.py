@@ -1,8 +1,12 @@
-class LoadBalancer:
-    def __init__(self, video_path: str) -> None:
-        self.video_path = video_path
+from distributed_video.load_balancer.node_manager import NodesDirectory
 
-    def send_frame(self):
+
+class LoadBalancer:
+    def __init__(self, video_path: str, nodes_directory: NodesDirectory) -> None:
+        self.video_path = video_path
+        self.nodes_directory = nodes_directory
+
+    def send_frame(self, frame):
         pass
 
     def dissect_video(self):
