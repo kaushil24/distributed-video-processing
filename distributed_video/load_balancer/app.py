@@ -20,8 +20,10 @@ def apply_filter():
     file_name, ext = os.path.splitext(request_dict.get("file_name"))
     file_name = f'{file_name}__{time.strftime("%Y%m%d_%H%M%S")}{ext}'
     MediaUtils.save_video(uploded_file, Path(f"media/{file_name}"))
+    # these are celery tasks
     # lb = LoadBalancer(video_path=video_path)
     # lb.distribute_video()
+    # lb.aggregate()
     task_id = str(uuid.uuid4())
     response_dict = {"task_id": task_id}
     return Response(response_dict)

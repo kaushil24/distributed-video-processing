@@ -9,7 +9,14 @@
 
 # To have multiple nodes use the same script to start you need to decouple the following env vars
 # this is a "good-enough" list but not an exhaustive one
+
+# ----- networking related vars ----
 # RABBIT_MQ_URL
 # NODE_URL
 # REQUEST_SOCKET_URL
 # RESP_SOCKET_URL # however this one will be shared among all the nodes as we have only 1 queue where all the nodes will drop their results after processing the frame. LB will read from here
+
+# ----- others ------
+# BLOB_STORE_TYPE = local/s3
+# BUCKET_NAME = "path/to/bucket" for local or "bucket-name" for s3
+# DIST_VIDEO_PROJECT_ROOT=/home/k2/Work/SCU/Distributed Systems/distributed-video-processing
