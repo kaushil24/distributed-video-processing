@@ -1,5 +1,7 @@
 Flask==2.2.2
-flask-socketio
 python-decouple
 opencv-python
 celery
+requests
+pre-commit
+pyzmq
