@@ -5,3 +5,4 @@ celery
 requests
 pre-commit
 pyzmq
+python-dotenv

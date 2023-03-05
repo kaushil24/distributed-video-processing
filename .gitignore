@@ -128,10 +128,12 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# individual files
-*.temp.ipynb
-distributed_video/scratchpad/*
-
 # media files
 *.mp4
 *.jpg
+
+# Project specific ignores
+**/scratchpad.test.ipynb
+distributed_video/scratchpad/*
+**/.env.node[1234567890]
+**/.env.shared
