@@ -5,8 +5,8 @@ from decouple import config, Csv
 
 class Node:
     def bind_socket(self) -> zmq.Socket:
-        context = zmq.Context()
-        self.socket = context.socket(zmq.PUSH)
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.PUSH)
         try:
             self.socket.bind(f"tcp://{self.req_socket_url}")
         except zmq.ZMQError as zqme:
@@ -21,6 +21,7 @@ class Node:
 
     def close_socket(self):
         self.socket.close()
+        self.context.destroy()
 
 
 class NodesDirectory:
