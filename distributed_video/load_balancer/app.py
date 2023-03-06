@@ -1,13 +1,13 @@
 from flask import Flask, request
 from flask import Response
 import uuid
-import re
-import base64
 import json
 from http import HTTPStatus
 from load_balancer import LoadBalancer
+from distributed_video.libs.utils import MediaUtils
+import os
 from distributed_video.load_balancer.node_manager import NodesDirectory
-
+from pathlib import Path
 
 app = Flask("load_balancer")
 
@@ -23,15 +23,12 @@ def apply_filter():
     nd.bind_all_sockets()
 
     task_id = str(uuid.uuid4())
-    data = request.json
-    fileNameWithPath = "./media/" + task_id + ".mp4"
-    byteString = re.sub("^.*,", "", data["videoData"])
-    videoData = base64.b64decode(byteString)
-    with open(fileNameWithPath, "wb") as out_file:  # open for [w]riting as [b]inary
-        out_file.write(videoData)
-    # these are celery tasks
-    print("here")
-    lb = LoadBalancer(task_id=task_id, nodes_directory=nd)
+    uploded_file = request.files.get("file")
+    request_dict = request.form
+    file_name, ext = os.path.splitext(request_dict.get("file_name"))
+    file_name = f"{file_name}__{task_id}{ext}"
+    MediaUtils.save_video(uploded_file, Path(f"media/{file_name}"))
+    lb = LoadBalancer(file_name=file_name, task_id=task_id, nodes_directory=nd)
     lb.distribute_video()
     # lb.aggregate()
     response_dict = {"task_id": task_id, "message": "uploaded successfully"}

@@ -3,11 +3,11 @@ from flask import Response
 from celery import Celery
 from http import HTTPStatus
 import zmq
-import time
 from urllib import parse
 from dotenv import load_dotenv
 import argparse
 import os
+import json
 
 
 app = Flask(__name__)
@@ -32,11 +32,18 @@ def consumer(req_socket_url: str, resp_socket_url: str):
 
     while True:
         print("rec new messageszzzzz")
-        work = consumer_receiver.recv_json()
-        data = work["task"]
-        time.sleep(0.2)
-        print(data)
-        result = {"data": data}
+        jsonData = consumer_receiver.recv_json()
+        data = json.loads(jsonData)
+        frame_number = data["frame_number"]
+        data["frame"]
+        data["task_id"]
+        print(frame_number)
+        # jpg_original = base64.b64decode(data)
+        # jpg_as_np = np.frombuffer(jpg_original, dtype=np.uint8)
+        # img = cv2.imdecode(jpg_as_np, flags=1)
+        # print(img.shape)
+        # time.sleep(0.2)
+        result = {"data": "done"}
         consumer_sender.send_json(result)
 
 
