@@ -26,13 +26,13 @@ def get_coordinates(
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     # get face-rectangles from image - facial detection
     rects = detector(gray, 1)
-    print(rects)
-    print(type(rects))
+    # print(rects)
+    # print(type(rects))
     if len(rects) > 0:
         # get coordinates inside each rectangle (face)
         for i, rect in enumerate(rects):
             shape = predictor(gray, rect)
-            print(shape)
+            # print(shape)
             shape = np.zeros((68, 2), dtype=int)
             for i in range(0, 68):
                 shape[i] = (
@@ -63,16 +63,16 @@ def draw_delaunay(shape: np.ndarray, image: np.ndarray) -> np.ndarray:
     return image
 
 
-def dlib_main(image, frame_no):
+def dlib_main(image, frame_no, task_id):
     detector, predictor = initialise_model(
         "/home/phani/Desktop/disributed/project/distributed-video-processing/distributed_video/assets/shape_predictor_68_face_landmarks.dat"
     )
     # image = cv2.imread('/home/phani/Desktop/disributed/project/distributed-video-processing/distributed_video/assets/face.jpg')
-    print("reached to dlib function")
     shape, image = get_coordinates(detector, predictor, image)
     if shape is not None:
         output = draw_delaunay(shape, image)
     else:
         output = image
-    cv2.imwrite((str(frame_no) + ".jpg"), output)
+    writePath = "./processdump/" + task_id + "_" + str(frame_no) + ".jpg"
+    cv2.imwrite((writePath), output)
     return "frame saved: " + str(frame_no)

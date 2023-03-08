@@ -36,7 +36,6 @@ def consumer(req_socket_url: str, resp_socket_url: str):
     while True:
         print("rec new messageszzzzz")
         jsonData = consumer_receiver.recv().decode()
-        print("HERE")
         # print(jsonData)
         # Deserialize the JSON-encoded string
         data = json.loads(jsonData)
@@ -47,9 +46,7 @@ def consumer(req_socket_url: str, resp_socket_url: str):
 
         # Decode the image from the byte string
         image = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
-        print(image.shape)
-        status = dlib_main(image, 101)
-        print(status)
+        dlib_main(image, data["frame_number"], data["task_id"])
         # data = json.loads(jsonData)
         # frame_number = data["frame_number"]
         # print(frame_number)

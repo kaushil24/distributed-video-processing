@@ -52,7 +52,7 @@ class NodesDirectory:
         self.increment_next_node_index()
         return resp
 
-    def send_default(self, *args, **kwargs):
+    def send_data_as_string(self, *args, **kwargs):
         """
         Wrapper over socket.send_json(). It picks the socket pointed
         by the next

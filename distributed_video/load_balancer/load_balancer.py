@@ -4,7 +4,7 @@ import json
 
 
 class LoadBalancer:
-    def send_frame(self, frameData, frameNumber):
+    def send_frame(self, frameData):
         # print(frame)
         # frameData = {
         #     "task_id": self.task_id,
@@ -12,15 +12,9 @@ class LoadBalancer:
         #     "frame_number": frameNumber,
         # }
 
-        print("here")
         jsonFrameData = json.dumps(frameData)
-        print(
-            [
-                self.nodes_directory.nodes[i].req_socket_url
-                for i in range(len(self.nodes_directory.nodes))
-            ]
-        )
-        self.nodes_directory.send_default(jsonFrameData)
+
+        self.nodes_directory.send_data_as_string(jsonFrameData)
 
     def dissect_video(self):
         fileNameWithPath = "media/" + self.file_name
@@ -31,27 +25,36 @@ class LoadBalancer:
         print("here")
         print(success)
         # Loop through the video frames
-        while success:
-            image_bytes = cv2.imencode(".jpg", frame)[1].tobytes()
+        cap = cv2.VideoCapture(fileNameWithPath)
+        cap.get(cv2.CAP_PROP_FPS)
+        while True:
+            ret, frame = cam.read()
+            if ret:
+                # Save the frame as an image
+                image_bytes = cv2.imencode(".jpg", frame)[1].tobytes()
+                image_hex = image_bytes.hex()
+                frameData = {
+                    "image": image_hex,
+                    "frame_number": currentframe,
+                    "task_id": self.task_id,
+                }
+                print(currentframe)
+                self.send_frame(frameData=frameData)
+                currentframe += 1
+            else:
+                break
+        # while success:
+        #     image_bytes = cv2.imencode(".jpg", frame)[1].tobytes()
 
-            # Convert the image bytes to a hex-encoded string
-            image_hex = image_bytes.hex()
+        #     image_hex = image_bytes.hex()
 
-            # # Create a dictionary containing the image data
-            # data = {'image': image_hex}
-
-            # # Serialize the dictionary as a JSON-encoded string
-            # json_data = json.dumps(data)
-
-            # # Send the JSON-encoded string over the socket
-            # socket.send(json_data.encode())
-
-            currentframe += 1
-            # Process the frame bytes here
-            frameData = {"image": image_hex}
-            self.send_frame(frameData=frameData, frameNumber=currentframe)
-            # Read the next frame
-            # success, frame = cam.read()
+        #     currentframe += 1
+        #     # Process the frame bytes here
+        #     frameData = {"image": image_hex, "frame_number": currentframe, "task_id": self.task_id}
+        #     print(currentframe)
+        #     self.send_frame(frameData=frameData)
+        #     # Read the next frame
+        #     # success, frame = cam.read()
 
         # Release the video file
         cam.release()
