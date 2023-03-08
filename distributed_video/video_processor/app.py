@@ -9,6 +9,9 @@ from dotenv import load_dotenv
 import argparse
 import os
 
+# from distributed_video.db.base import session
+# from distributed_video.db.models import FrameInfoModel
+
 
 app = Flask(__name__)
 
@@ -39,6 +42,11 @@ def consumer(req_socket_url: str, resp_socket_url: str):
         result = {"data": data}
         consumer_sender.send_json(result)
 
+        # to commit to the db
+        # mdl = FrameInfoModel(task="hex0", frame_number=1, coordinates={'a':'b'}, process_time=2, node=app.config.get("NODE_ID"))
+        # mdl.save()
+        # session.commit()
+
 
 @app.route("/health-check", methods=["GET", "POST"])
 def health_check():
@@ -64,8 +72,10 @@ if __name__ == "__main__":
     RESP_SOCKET_URL = os.environ.get("RESP_SOCKET_URL")
     CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
     NODE_URL = os.environ.get("NODE_URL")
+    NODE_ID = os.environ.get("NODE_ID")
 
     app.config["CELERY_BROKER_URL"] = CELERY_BROKER_URL
+    app.config["NODE_ID"] = NODE_ID
 
     consumer.apply_async([REQ_SOCKET_URL, RESP_SOCKET_URL])
     up = parse.urlparse(NODE_URL)
