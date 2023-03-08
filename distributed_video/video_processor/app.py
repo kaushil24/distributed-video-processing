@@ -8,6 +8,9 @@ from dotenv import load_dotenv
 import argparse
 import os
 import json
+import numpy as np
+import cv2
+from dlib_distributed import dlib_main
 
 
 app = Flask(__name__)
@@ -32,16 +35,29 @@ def consumer(req_socket_url: str, resp_socket_url: str):
 
     while True:
         print("rec new messageszzzzz")
-        jsonData = consumer_receiver.recv_json()
+        jsonData = consumer_receiver.recv().decode()
+        print("HERE")
+        # print(jsonData)
+        # Deserialize the JSON-encoded string
         data = json.loads(jsonData)
-        frame_number = data["frame_number"]
-        data["frame"]
-        data["task_id"]
-        print(frame_number)
-        # jpg_original = base64.b64decode(data)
-        # jpg_as_np = np.frombuffer(jpg_original, dtype=np.uint8)
-        # img = cv2.imdecode(jpg_as_np, flags=1)
-        # print(img.shape)
+
+        # Convert the hex-encoded image data back into a byte string
+        image_hex = data["image"]
+        image_bytes = bytes.fromhex(image_hex)
+
+        # Decode the image from the byte string
+        image = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
+        print(image.shape)
+        status = dlib_main(image, 101)
+        print(status)
+        # data = json.loads(jsonData)
+        # frame_number = data["frame_number"]
+        # print(frame_number)
+        # img_data = data["frame"]
+        # data["task_id"]
+        # img_data = bytes.fromhex(img_data)
+        # img_np = cv2.imdecode(np.fromstring(img_data, dtype=np.uint8))
+        # print(img_np.shape)
         # time.sleep(0.2)
         result = {"data": "done"}
         consumer_sender.send_json(result)

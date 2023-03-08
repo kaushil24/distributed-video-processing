@@ -10,7 +10,8 @@
    pip install -r requirements.txt
    ```
 - Update add distributed_video to python path.
-  - Create a `distributed-video.pth` file in `.venv/lib/{python-version}/site-packages`. Paste this `/home/k2/Work/SCU/Distributed Systems/distributed-video-processing/distributed_video`
+  - Create a `distributed-video.pth` file in `.venv/lib/{python-version}/site-packages`. Paste this `/home/phani/Desktop/disributed/project/distributed-video-processing/distributed_video
+`
 - Set up pre-commit hooks. Run `pre-commit install`
 - Set project root. Add the following line in ~/.bashrc `DIST_VIDEO_PROJECT_ROOT=/home/k2/Work/SCU/Distributed Systems/distributed-video-processing`
 

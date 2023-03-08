@@ -19,7 +19,7 @@ def apply_filter():
     response = requests.post(f"{base_url}/apply-filter", files=files, data={'file_name': file_name})
     """
     nd = NodesDirectory()
-    nd.close_all_sockets()
+    # nd.close_all_sockets()
     nd.bind_all_sockets()
 
     task_id = str(uuid.uuid4())
