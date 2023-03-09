@@ -8,6 +8,10 @@ from distributed_video.libs.utils import MediaUtils
 import os
 from distributed_video.load_balancer.node_manager import NodesDirectory
 from pathlib import Path
+from distributed_video.db.models import FrameInfoModel
+from typing import List
+from flask import jsonify
+
 
 app = Flask("load_balancer")
 
@@ -38,6 +42,18 @@ def apply_filter():
     return Response(
         json.dumps(response_dict), HTTPStatus.OK, mimetype="application/json"
     )
+
+
+@app.route("/get-stats/<task>", methods=["GET"])
+def get_stats(task: str):
+    # @todo: Add logic to return different statistics
+    model_query: List[FrameInfoModel] = FrameInfoModel.query().filter_by(task=task)
+    response = []
+    for frame_info in model_query:
+        response.append({"task": frame_info.task})
+
+    # @todo: How to use flask's Response?
+    return jsonify(response)
 
 
 if __name__ == "__main__":
