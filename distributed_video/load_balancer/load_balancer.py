@@ -4,35 +4,57 @@ import json
 
 
 class LoadBalancer:
-    def send_frame(self, frame, frameNumber):
+    def send_frame(self, frameData):
         # print(frame)
-        frameData = {
-            "task_id": self.task_id,
-            "frame": frame,
-            "frame_number": frameNumber,
-        }
-        print("here")
+        # frameData = {
+        #     "task_id": self.task_id,
+        #     'frame': frame,
+        #     "frame_number": frameNumber,
+        # }
+
         jsonFrameData = json.dumps(frameData)
-        self.nodes_directory.send_json(jsonFrameData)
+
+        self.nodes_directory.send_data_as_string(jsonFrameData)
 
     def dissect_video(self):
-        fileNameWithPath = "./media/" + self.file_name
+        fileNameWithPath = "media/" + self.file_name
         cam = cv2.VideoCapture(fileNameWithPath)
-
+        print(fileNameWithPath)
         currentframe = 0
         success, frame = cam.read()
-
+        print("here")
+        print(success)
         # Loop through the video frames
-        while success:
-            # Convert the frame to bytes
-            frame_bytes = frame.tobytes().hex()
-            # frame_bytes_string = base64.b64encode(frame_bytes).decode()
-            # frame_bytes_string = frame_bytes.decode()
-            currentframe += 1
-            # Process the frame bytes here
-            self.send_frame(frame=frame_bytes, frameNumber=currentframe)
-            # Read the next frame
-            success, frame = cam.read()
+        cap = cv2.VideoCapture(fileNameWithPath)
+        cap.get(cv2.CAP_PROP_FPS)
+        while True:
+            ret, frame = cam.read()
+            if ret:
+                # Save the frame as an image
+                image_bytes = cv2.imencode(".jpg", frame)[1].tobytes()
+                image_hex = image_bytes.hex()
+                frameData = {
+                    "image": image_hex,
+                    "frame_number": currentframe,
+                    "task_id": self.task_id,
+                }
+                print(currentframe)
+                self.send_frame(frameData=frameData)
+                currentframe += 1
+            else:
+                break
+        # while success:
+        #     image_bytes = cv2.imencode(".jpg", frame)[1].tobytes()
+
+        #     image_hex = image_bytes.hex()
+
+        #     currentframe += 1
+        #     # Process the frame bytes here
+        #     frameData = {"image": image_hex, "frame_number": currentframe, "task_id": self.task_id}
+        #     print(currentframe)
+        #     self.send_frame(frameData=frameData)
+        #     # Read the next frame
+        #     # success, frame = cam.read()
 
         # Release the video file
         cam.release()

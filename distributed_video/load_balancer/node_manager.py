@@ -52,6 +52,15 @@ class NodesDirectory:
         self.increment_next_node_index()
         return resp
 
+    def send_data_as_string(self, *args, **kwargs):
+        """
+        Wrapper over socket.send_json(). It picks the socket pointed
+        by the next
+        """
+        resp = self.nodes[self.next_node_index].socket.send_string(*args, **kwargs)
+        self.increment_next_node_index()
+        return resp
+
     def increment_next_node_index(self) -> None:
         self.next_node_index = (self.next_node_index + 1) % self.num_nodes
 

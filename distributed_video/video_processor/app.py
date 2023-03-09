@@ -8,6 +8,13 @@ from dotenv import load_dotenv
 import argparse
 import os
 import json
+import numpy as np
+import cv2
+from distributed_video.video_processor.dlib_distributed import dlib_main
+import time
+
+from distributed_video.db.base import session
+from distributed_video.db.models import FrameInfoModel
 
 
 app = Flask(__name__)
@@ -32,19 +39,46 @@ def consumer(req_socket_url: str, resp_socket_url: str):
 
     while True:
         print("rec new messageszzzzz")
-        jsonData = consumer_receiver.recv_json()
+        jsonData = consumer_receiver.recv().decode()
+        # print(jsonData)
+        # Deserialize the JSON-encoded string
         data = json.loads(jsonData)
-        frame_number = data["frame_number"]
-        data["frame"]
-        data["task_id"]
-        print(frame_number)
-        # jpg_original = base64.b64decode(data)
-        # jpg_as_np = np.frombuffer(jpg_original, dtype=np.uint8)
-        # img = cv2.imdecode(jpg_as_np, flags=1)
-        # print(img.shape)
+
+        # Convert the hex-encoded image data back into a byte string
+        image_hex = data["image"]
+        image_bytes = bytes.fromhex(image_hex)
+
+        # Decode the image from the byte string
+        image = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
+        startTime = time.time()
+        dlib_main(image, data["frame_number"], data["task_id"])
+        endTime = time.time()
+        processTime = endTime - startTime
+        mdl = FrameInfoModel(
+            task=data["task_id"],
+            frame_number=data["frame_number"],
+            coordinates={"hello": "world"},
+            process_time=processTime,
+            node=app.config.get("NODE_ID"),
+        )
+        mdl.save()
+        session.commit()
+        # data = json.loads(jsonData)
+        # frame_number = data["frame_number"]
+        # print(frame_number)
+        # img_data = data["frame"]
+        # data["task_id"]
+        # img_data = bytes.fromhex(img_data)
+        # img_np = cv2.imdecode(np.fromstring(img_data, dtype=np.uint8))
+        # print(img_np.shape)
         # time.sleep(0.2)
         result = {"data": "done"}
         consumer_sender.send_json(result)
+
+        # to commit to the db
+        # mdl = FrameInfoModel(task="hex0", frame_number=1, coordinates={'a':'b'}, process_time=2, node=app.config.get("NODE_ID"))
+        # mdl.save()
+        # session.commit()
 
 
 @app.route("/health-check", methods=["GET", "POST"])
@@ -71,8 +105,10 @@ if __name__ == "__main__":
     RESP_SOCKET_URL = os.environ.get("RESP_SOCKET_URL")
     CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
     NODE_URL = os.environ.get("NODE_URL")
+    NODE_ID = os.environ.get("NODE_ID")
 
     app.config["CELERY_BROKER_URL"] = CELERY_BROKER_URL
+    app.config["NODE_ID"] = NODE_ID
 
     consumer.apply_async([REQ_SOCKET_URL, RESP_SOCKET_URL])
     up = parse.urlparse(NODE_URL)
