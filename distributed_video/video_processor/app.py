@@ -10,10 +10,11 @@ import os
 import json
 import numpy as np
 import cv2
-from dlib_distributed import dlib_main
+from distributed_video.video_processor.dlib_distributed import dlib_main
+import time
 
-# from distributed_video.db.base import session
-# from distributed_video.db.models import FrameInfoModel
+from distributed_video.db.base import session
+from distributed_video.db.models import FrameInfoModel
 
 
 app = Flask(__name__)
@@ -49,7 +50,19 @@ def consumer(req_socket_url: str, resp_socket_url: str):
 
         # Decode the image from the byte string
         image = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
+        startTime = time.time()
         dlib_main(image, data["frame_number"], data["task_id"])
+        endTime = time.time()
+        processTime = endTime - startTime
+        mdl = FrameInfoModel(
+            task=data["task_id"],
+            frame_number=data["frame_number"],
+            coordinates={"hello": "world"},
+            process_time=processTime,
+            node=app.config.get("NODE_ID"),
+        )
+        mdl.save()
+        session.commit()
         # data = json.loads(jsonData)
         # frame_number = data["frame_number"]
         # print(frame_number)

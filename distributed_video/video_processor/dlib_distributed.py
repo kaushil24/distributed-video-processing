@@ -78,4 +78,6 @@ def dlib_main(image, frame_no, task_id):
     filename = str(frame_no) + ".jpg"
     imagewriter = BlobStore()
     imagewriter.write_file(file=output_bytes, file_name=filename, task=task_id)
-    return "frame saved: " + str(frame_no)
+    coordinates = dict(enumerate(shape.flatten(), 1))
+
+    return coordinates

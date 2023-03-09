@@ -1,4 +1,4 @@
-from distributed_video.db.base import Base
+from distributed_video.db.base import Base, engine
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import Integer, String, Column
 
@@ -29,3 +29,6 @@ class FrameInfoModel(Base):
 
     def __repr__(self) -> str:
         return f"{self.task}:{self.frame_number}"
+
+
+Base.metadata.create_all(engine)
