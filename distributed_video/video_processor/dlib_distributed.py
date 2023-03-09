@@ -6,6 +6,7 @@ from scipy.spatial import Delaunay
 import dlib
 import numpy as np
 from typing import Tuple
+from distributed_video.libs.utils import BlobStore
 
 
 # initialise model from dat file path - model file url : https://github.com/italojs/facial-landmarks-recognition/blob/master/shape_predictor_68_face_landmarks.dat
@@ -73,6 +74,8 @@ def dlib_main(image, frame_no, task_id):
         output = draw_delaunay(shape, image)
     else:
         output = image
-    writePath = "./processdump/" + task_id + "_" + str(frame_no) + ".jpg"
-    cv2.imwrite((writePath), output)
+    output_bytes = output.tobytes()
+    filename = str(frame_no) + ".jpg"
+    imagewriter = BlobStore()
+    imagewriter.write_file(file=output_bytes, file_name=filename, task=task_id)
     return "frame saved: " + str(frame_no)
