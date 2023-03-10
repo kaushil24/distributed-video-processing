@@ -7,6 +7,10 @@ import dlib
 import numpy as np
 from typing import Tuple
 from distributed_video.libs.utils import BlobStore
+from decouple import config
+import os
+
+PROJECT_ROOT = config("DIST_VIDEO_PROJECT_ROOT")
 
 
 # initialise model from dat file path - model file url : https://github.com/italojs/facial-landmarks-recognition/blob/master/shape_predictor_68_face_landmarks.dat
@@ -66,7 +70,12 @@ def draw_delaunay(shape: np.ndarray, image: np.ndarray) -> np.ndarray:
 
 def dlib_main(image, frame_no, task_id):
     detector, predictor = initialise_model(
-        "/home/phani/Desktop/disributed/project/distributed-video-processing/distributed_video/assets/shape_predictor_68_face_landmarks.dat"
+        os.path.join(
+            PROJECT_ROOT,
+            "distributed_video",
+            "assets",
+            "shape_predictor_68_face_landmarks.dat",
+        )
     )
     # image = cv2.imread('/home/phani/Desktop/disributed/project/distributed-video-processing/distributed_video/assets/face.jpg')
     shape, image = get_coordinates(detector, predictor, image)
@@ -78,6 +87,7 @@ def dlib_main(image, frame_no, task_id):
     filename = str(frame_no) + ".jpg"
     imagewriter = BlobStore()
     imagewriter.write_file(file=output_bytes, file_name=filename, task=task_id)
-    coordinates = dict(enumerate(shape.flatten(), 1))
+    # coordinates = dict(enumerate(shape.flatten(), 1))
+    coordinates = {"hello": "world"}
 
     return coordinates

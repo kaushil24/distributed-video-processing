@@ -61,6 +61,10 @@ class NodesDirectory:
         self.increment_next_node_index()
         return resp
 
+    def publish_EOF(self):
+        for node in self.nodes:
+            node.socket.send_json({"EOF": True})
+
     def increment_next_node_index(self) -> None:
         self.next_node_index = (self.next_node_index + 1) % self.num_nodes
 

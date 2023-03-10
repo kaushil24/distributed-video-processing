@@ -25,7 +25,7 @@ celery.conf.update(app.config)
 
 
 @celery.task
-def consumer(req_socket_url: str, resp_socket_url: str):
+def consumer(req_socket_url: str, resp_socket_url: str, node_id: str):
     print("Starting the socket.......")
     context = zmq.Context()
     # recieve work
@@ -43,7 +43,14 @@ def consumer(req_socket_url: str, resp_socket_url: str):
         # print(jsonData)
         # Deserialize the JSON-encoded string
         data = json.loads(jsonData)
-
+        # if all the nodes are done processing, then commit it to the db
+        if data.get("EOF", False):
+            print("Got it it is the end of frame")
+            session.commit()
+            # @todo: Publish EOF to the RESP QUEUE
+            eof_result = {"EOF": True, "node": node_id, "task_id": data.get("task_id")}
+            consumer_sender.send_json(eof_result)
+            continue
         # Convert the hex-encoded image data back into a byte string
         image_hex = data["image"]
         image_bytes = bytes.fromhex(image_hex)
@@ -59,26 +66,18 @@ def consumer(req_socket_url: str, resp_socket_url: str):
             frame_number=data["frame_number"],
             coordinates={"hello": "world"},
             process_time=processTime,
-            node=app.config.get("NODE_ID"),
+            node=node_id,
         )
         mdl.save()
-        session.commit()
-        # data = json.loads(jsonData)
-        # frame_number = data["frame_number"]
-        # print(frame_number)
-        # img_data = data["frame"]
-        # data["task_id"]
-        # img_data = bytes.fromhex(img_data)
-        # img_np = cv2.imdecode(np.fromstring(img_data, dtype=np.uint8))
-        # print(img_np.shape)
-        # time.sleep(0.2)
-        result = {"data": "done"}
-        consumer_sender.send_json(result)
 
-        # to commit to the db
-        # mdl = FrameInfoModel(task="hex0", frame_number=1, coordinates={'a':'b'}, process_time=2, node=app.config.get("NODE_ID"))
-        # mdl.save()
-        # session.commit()
+        result = {
+            "node": node_id,
+            "frame_number": data.get("frame_number"),
+            "status": "PROCESSED",
+            "task_id": data.get("task_id"),
+            "EOF": False,
+        }
+        consumer_sender.send_json(result)
 
 
 @app.route("/health-check", methods=["GET", "POST"])
@@ -110,6 +109,6 @@ if __name__ == "__main__":
     app.config["CELERY_BROKER_URL"] = CELERY_BROKER_URL
     app.config["NODE_ID"] = NODE_ID
 
-    consumer.apply_async([REQ_SOCKET_URL, RESP_SOCKET_URL])
+    consumer.apply_async([REQ_SOCKET_URL, RESP_SOCKET_URL, NODE_ID])
     up = parse.urlparse(NODE_URL)
     app.run(debug=True, host=up.hostname, port=up.port)
