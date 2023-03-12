@@ -11,6 +11,8 @@ from pathlib import Path
 from distributed_video.db.models import FrameInfoModel
 from typing import List
 from flask import jsonify
+import re
+import base64
 
 
 app = Flask("load_balancer")
@@ -25,13 +27,14 @@ def apply_filter():
     nd = NodesDirectory()
     # nd.close_all_sockets()
     nd.bind_all_sockets()
-
     task_id = str(uuid.uuid4())
-    uploded_file = request.files.get("file")
     request_dict = request.form
-    file_name, ext = os.path.splitext(request_dict.get("file_name"))
+    byteString = re.sub("^.*,", "", request_dict.get("file"))
+    bytes_data = base64.b64decode(byteString)
+
+    file_name, ext = os.path.splitext(request_dict.get("filename"))
     file_name = f"{file_name}__{task_id}{ext}"
-    MediaUtils.save_video(uploded_file, Path(f"media/{file_name}"))
+    MediaUtils.save_video(bytes_data, Path(f"media/{file_name}"))
     lb = LoadBalancer(file_name=file_name, task_id=task_id, nodes_directory=nd)
     lb.distribute_video()
     # lb.aggregate()
