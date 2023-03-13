@@ -4,7 +4,8 @@ import glob
 def aggregator(folder_name, task_id):
     img_array = []
     for filename in glob.glob("images/*.jpg"):
-        img = cv2.imread(filename)
+        file_bytes = read_file(filename=filename, task=task_id)
+        img = cv2.imdecode(np.frombuffer(file_bytes, np.uint8), cv2.IMREAD_COLOR)
         height, width, layers = img.shape
         size = (width, height)
         img_array.append(img)
