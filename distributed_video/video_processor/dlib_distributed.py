@@ -83,10 +83,11 @@ def dlib_main(image, frame_no, task_id):
         output = draw_delaunay(shape, image)
     else:
         output = image
-    output_bytes = output.tobytes()
+    # output_bytes = output.tobytes()
     filename = str(frame_no) + ".jpg"
-    imagewriter = BlobStore()
-    imagewriter.write_file(file=output_bytes, file_name=filename, task=task_id)
+    bs = BlobStore()
+    bs.write_frame(filename, task_id, output)
+    # bs.write_file(file=output_bytes, file_name=filename, task=task_id)
     # coordinates = dict(enumerate(shape.flatten(), 1))
     coordinates = {"hello": "world"}
 

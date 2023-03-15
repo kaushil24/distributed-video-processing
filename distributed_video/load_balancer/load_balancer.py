@@ -2,7 +2,9 @@ from distributed_video.load_balancer.node_manager import NodesDirectory
 from distributed_video.load_balancer.celery_worker import celery_app
 import cv2
 import json
-import time
+import zmq
+from distributed_video.load_balancer.aggregator import aggregator
+from distributed_video.load_balancer.constants import RESP_SOCKET_URL
 
 
 # Deprecated. Use bare functions instead
@@ -89,6 +91,7 @@ def dissect_video(self, file_name: str):
     cam = cv2.VideoCapture(fileNameWithPath)
     print(fileNameWithPath)
     currentframe = 0
+    processed_frames = 0
     success, frame = cam.read()
     print("here")
     print(success)
@@ -116,9 +119,17 @@ def dissect_video(self, file_name: str):
             currentframe += 1
             self.update_state(
                 state="STARTED",
-                meta={"processed_frames": currentframe, "total_frames": total_frames},
+                meta={
+                    "sent_frames": currentframe,
+                    "total_frames": total_frames,
+                    "processed_frames": processed_frames,
+                },
             )
-            time.sleep(2)
+            if currentframe == 5:
+                nd.publish_EOF()
+                nd.close_all_sockets()
+                break
+            # time.sleep(2)
         else:
             nd.publish_EOF()
             nd.close_all_sockets()
@@ -134,3 +145,41 @@ def dissect_video(self, file_name: str):
     # keep reading on this socket until you get an EOF from all the nodes
     # once you have that, call the aggregator
     # after aggregator, change the status of the task to completed
+
+    # def receive_eof(nodes_id: int, resp_socket_url: str, nd: NodesDirectory):
+    print("Starting the socket.......")
+    context1 = zmq.Context()
+
+    # send work
+    ack_socket = context1.socket(zmq.PULL)
+    ack_socket.connect(f"tcp://{RESP_SOCKET_URL}")
+    print(f"Listening to socket url: {RESP_SOCKET_URL}")
+
+    # Load total nodes created and create node-status dict with default status "pending"
+    node_status = {node.id: "pending" for node in nd.nodes}
+
+    while True:
+        # Receive the EOF message
+        message = ack_socket.recv_string()
+        data = json.loads(message)
+        print(data)
+        # If EOF received, mark "done" in node-status dict
+        if data.get("EOF"):
+            node_status[data["node"]] = "done"
+        else:
+            # else calculate the number of nodes processed
+            processed_frames += 1
+            self.update_state(
+                state="STARTED",
+                meta={
+                    "sent_frames": currentframe,
+                    "total_frames": total_frames,
+                    "processed_frames": processed_frames,
+                },
+            )
+        # If all done, then call aggregator function
+        if "pending" not in node_status.values():
+            break
+
+    status = aggregator(task_id=task_id, total_frames=processed_frames)
+    return status

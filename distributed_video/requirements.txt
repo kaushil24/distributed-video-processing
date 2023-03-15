@@ -9,7 +9,7 @@ python-dotenv
 psycopg2-binary==2.9.3
 Flask-SQLAlchemy==2.5.1
 Flask-Migrate==3.1.0
-cmake
-dlib
+# cmake
+# dlib
 imutils
 scipy

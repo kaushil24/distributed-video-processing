@@ -2,6 +2,11 @@ from pathlib import Path
 from werkzeug.datastructures import FileStorage
 from decouple import config
 import os
+from typing import List
+import glob
+import numpy as np
+import cv2
+
 
 # @todo: Read from env
 BLOB_STORE_TYPE = "local"
@@ -45,6 +50,19 @@ class BlobStore:
         with open(file_path, "rb") as f:
             file_bytes = f.read()
         return file_bytes
+
+    def get_all_files(self, task: str) -> List[str]:
+        """
+        returns list of all the files in a dir
+        """
+        return glob.glob(self._get_abs_path(task) + "/*.jpg")
+
+    def write_frame(self, file_name: str, task: str, image: np.ndarray) -> bool:
+        os.makedirs(os.path.join(self.bucket_name, task), exist_ok=True)
+        return cv2.imwrite(self._get_abs_path(f"{file_name}", task), image)
+
+    def read_frame(self, file_name: str, task: str) -> np.ndarray:
+        return cv2.imread(self._get_abs_path(f"{file_name}", task))
 
 
 ## --------- example usage ------------

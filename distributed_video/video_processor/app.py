@@ -32,18 +32,28 @@ def consumer(req_socket_url: str, resp_socket_url: str, node_id: str):
     consumer_receiver = context.socket(zmq.PULL)
     consumer_receiver.connect(f"tcp://{req_socket_url}")
     # send work
-    consumer_sender = context.socket(zmq.PUSH)
-    consumer_sender.connect(f"tcp://{resp_socket_url}")
+    context2 = zmq.Context()
+    context2.destroy()
+    context2 = zmq.Context()
+    consumer_sender = context2.socket(zmq.PUSH)
+    try:
+        consumer_sender.bind(f"tcp://{resp_socket_url}")
+    except zmq.error.ZMQError as ex:
+        print("============= Error with zmq'")
+        print("socket already bounded")
+        print(ex)
+        consumer_sender.close()
+        consumer_sender.bind(f"tcp://{resp_socket_url}")
     print(f"Receiving socket url: {req_socket_url}")
     print(f"Sender socket url: {resp_socket_url}")
 
     while True:
-        print("rec new messageszzzzz")
         jsonData = consumer_receiver.recv().decode()
         # print(jsonData)
         # Deserialize the JSON-encoded string
         data = json.loads(jsonData)
         # if all the nodes are done processing, then commit it to the db
+        print(f'Rec frame id: {data.get("frame_number")}')
         if data.get("EOF", False):
             print("Got it it is the end of frame")
             session.commit()
@@ -58,13 +68,13 @@ def consumer(req_socket_url: str, resp_socket_url: str, node_id: str):
         # Decode the image from the byte string
         image = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
         startTime = time.time()
-        dlib_main(image, data["frame_number"], data["task_id"])
+        coordinates = dlib_main(image, data["frame_number"], data["task_id"])
         endTime = time.time()
         processTime = endTime - startTime
         mdl = FrameInfoModel(
             task=data["task_id"],
             frame_number=data["frame_number"],
-            coordinates={"hello": "world"},
+            coordinates=coordinates,
             process_time=processTime,
             node=node_id,
         )
@@ -87,17 +97,21 @@ def health_check():
 
 if __name__ == "__main__":
     argParser = argparse.ArgumentParser()
+
     # nenv means node-env and senv means shared-env :P
     argParser.add_argument(
-        "-task", "--task", help="Start celery or flask?", choices=["celery", "flask"]
+        "-nenv", "--nenv", help="Pass path to the .env.node[i] file", required=False
     )
-    argParser.add_argument("-nenv", "--nenv", help="Pass path to the .env.node[i] file")
-    argParser.add_argument("-senv", "--senv", help="Pass path to the shared env file")
+    argParser.add_argument(
+        "-senv", "--senv", help="Pass path to the shared env file", required=False
+    )
 
     args = argParser.parse_args()
 
-    load_dotenv(args.nenv)
-    load_dotenv(args.senv)
+    if args.nenv:
+        load_dotenv(args.nenv)
+    if args.senv:
+        load_dotenv(args.senv)
     load_dotenv()
 
     REQ_SOCKET_URL = os.environ.get("REQ_SOCKET_URL")

@@ -20,9 +20,10 @@
 
 ## Starting pgsql
 
-- `sudo docker run --name dist-pg -e POSTGRES_USER="postgres" -e POSTGRES_PASSWORD="HeLL0WZ" -e POSTGRES_DB="distvdo"  postgres`
-- Run the following command to get the url: `docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' dist-pg`
+- `sudo docker run --name db -e POSTGRES_USER="postgres" -e POSTGRES_PASSWORD="HeLL0WZ" -e POSTGRES_DB="distvdo"  postgres`
+- Run the following command to get the url: `docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' db`
 - Copy the IP and put it in the .env file: `SQLALCHEMY_DATABASE_URI="postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@<IP>:5432/${POSTGRES_DB}"`
+- Also update the `LB_CELERY_BACKEND_URL` variable with the new Postgres IP
   - **For restarting**: Shut down the container and then do `sudo docker rm dist-pg` 
 
 ## Starting the servers
@@ -40,12 +41,13 @@
 - Start celery first: (**Make sure the rabbitmq port [5669] is same here and in .env file**)
 
   ```shell
+  cd distributed_video/load_balancer
   docker run -d -p 5669:5672 rabbitmq
   celery -A celery_worker.celery_app worker --concurrency=1  --loglevel=INFO
   ```
 
 ```shell
-  cd distributed_video/load_balancer`
+  cd distributed_video/load_balancer
   python app.py
 ```
 
