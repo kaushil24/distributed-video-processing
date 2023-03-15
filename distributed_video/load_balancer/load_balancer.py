@@ -104,6 +104,7 @@ def dissect_video(self, file_name: str):
 
     # send work
     ack_socket = context1.socket(zmq.PULL)
+    print("----------------------", RESP_SOCKET_URL)
     ack_socket.bind(f"tcp://{RESP_SOCKET_URL}")
     print(f"Listening to socket url: {RESP_SOCKET_URL}")
 

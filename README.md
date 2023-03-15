@@ -24,7 +24,7 @@
 - Run the following command to get the url: `docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' db`
 - Copy the IP and put it in the .env file: `SQLALCHEMY_DATABASE_URI="postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@<IP>:5432/${POSTGRES_DB}"`
 - Also update the `LB_CELERY_BACKEND_URL` variable with the new Postgres IP
-  - **For restarting**: Shut down the container and then do `sudo docker rm dist-pg` 
+  - **For restarting**: Shut down the container and then do `sudo docker rm db` 
 
 ## Starting the servers
 

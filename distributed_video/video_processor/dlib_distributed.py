@@ -9,6 +9,20 @@ from typing import Tuple
 from distributed_video.libs.utils import BlobStore
 from decouple import config
 import os
+import json
+
+
+class MyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(MyEncoder, self).default(obj)
+
 
 PROJECT_ROOT = config("DIST_VIDEO_PROJECT_ROOT")
 
@@ -88,7 +102,6 @@ def dlib_main(image, frame_no, task_id):
     bs = BlobStore()
     bs.write_frame(filename, task_id, output)
     # bs.write_file(file=output_bytes, file_name=filename, task=task_id)
-    # coordinates = dict(enumerate(shape.flatten(), 1))
-    coordinates = {"hello": "world"}
-
+    coordinates = json.dumps(shape, cls=MyEncoder)
+    # coordinates = {"hello": "world"}
     return coordinates
