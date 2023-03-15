@@ -55,7 +55,7 @@ def test1(task: str):
     return jsonify(result.info)
 
 
-@app.route("/get-stats/<task>", methods=["GET"])
+@app.route("/get-stats-node/<task>", methods=["GET"])
 def get_stats(task: str):
     # @todo: Add logic to return different statistics
     model_query: List[FrameInfoModel] = FrameInfoModel.query().filter_by(task=task)
