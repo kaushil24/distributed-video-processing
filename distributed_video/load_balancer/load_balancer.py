@@ -98,6 +98,15 @@ def dissect_video(self, file_name: str):
     nd = NodesDirectory()
     nd.close_all_sockets()
     nd.bind_all_sockets()
+
+    print("Starting the socket.......")
+    context1 = zmq.Context()
+
+    # send work
+    ack_socket = context1.socket(zmq.PULL)
+    ack_socket.bind(f"tcp://{RESP_SOCKET_URL}")
+    print(f"Listening to socket url: {RESP_SOCKET_URL}")
+
     # Loop through the video frames
     cap = cv2.VideoCapture(fileNameWithPath)
     cap.get(cv2.CAP_PROP_FPS)
@@ -125,10 +134,10 @@ def dissect_video(self, file_name: str):
                     "processed_frames": processed_frames,
                 },
             )
-            if currentframe == 5:
-                nd.publish_EOF()
-                nd.close_all_sockets()
-                break
+            # if currentframe == 5:
+            #     nd.publish_EOF()
+            #     nd.close_all_sockets()
+            #     break
             # time.sleep(2)
         else:
             nd.publish_EOF()
@@ -147,14 +156,6 @@ def dissect_video(self, file_name: str):
     # after aggregator, change the status of the task to completed
 
     # def receive_eof(nodes_id: int, resp_socket_url: str, nd: NodesDirectory):
-    print("Starting the socket.......")
-    context1 = zmq.Context()
-
-    # send work
-    ack_socket = context1.socket(zmq.PULL)
-    ack_socket.connect(f"tcp://{RESP_SOCKET_URL}")
-    print(f"Listening to socket url: {RESP_SOCKET_URL}")
-
     # Load total nodes created and create node-status dict with default status "pending"
     node_status = {node.id: "pending" for node in nd.nodes}
 

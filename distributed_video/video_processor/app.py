@@ -37,13 +37,13 @@ def consumer(req_socket_url: str, resp_socket_url: str, node_id: str):
     context2 = zmq.Context()
     consumer_sender = context2.socket(zmq.PUSH)
     try:
-        consumer_sender.bind(f"tcp://{resp_socket_url}")
+        consumer_sender.connect(f"tcp://{resp_socket_url}")
     except zmq.error.ZMQError as ex:
         print("============= Error with zmq'")
         print("socket already bounded")
         print(ex)
-        consumer_sender.close()
-        consumer_sender.bind(f"tcp://{resp_socket_url}")
+        # consumer_sender.close()
+        consumer_sender.connect(f"tcp://{resp_socket_url}")
     print(f"Receiving socket url: {req_socket_url}")
     print(f"Sender socket url: {resp_socket_url}")
 
