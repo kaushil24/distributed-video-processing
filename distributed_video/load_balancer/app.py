@@ -12,6 +12,9 @@ from typing import List
 from flask import jsonify
 from celery.result import AsyncResult
 from celery_worker import celery_app
+import re
+import base64
+
 
 app = Flask("load_balancer")
 
@@ -23,11 +26,13 @@ def apply_filter():
     response = requests.post(f"{base_url}/apply-filter", files=files, data={'file_name': file_name})
     """
     task_id = str(uuid.uuid4())
-    uploded_file = request.files.get("file")
     request_dict = request.form
-    file_name, ext = os.path.splitext(request_dict.get("file_name"))
+    byteString = re.sub("^.*,", "", request_dict.get("file"))
+    bytes_data = base64.b64decode(byteString)
+
+    file_name, ext = os.path.splitext(request_dict.get("filename"))
     file_name = f"{file_name}__{task_id}{ext}"
-    MediaUtils.save_video(uploded_file, Path(f"media/{file_name}"))
+    MediaUtils.save_video(bytes_data, Path(f"media/{file_name}"))
     # lb = LoadBalancer(file_name=file_name, task_id=task_id, nodes_directory=nd)
     # lb.distribute_video()
     # task: AsyncResult = dissect_video.apply_async(kwargs={'file_name': file_name, 'nodes_directory':nd})
