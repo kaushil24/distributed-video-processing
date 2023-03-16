@@ -12,11 +12,12 @@ class Node:
         except zmq.ZMQError as zqme:
             print("Port already binded")
 
-    def __init__(self, base_url: str, req_socket_url: str) -> None:
+    def __init__(self, node_id: int, base_url: str, req_socket_url: str) -> None:
         # req_socket_url is the url on which this node is expceted to recieve incoming (requests) messages
         # aka the url on which the LB is expected to push the messages for that node to listen
         self.base_url = base_url
         self.req_socket_url = req_socket_url
+        self.id = node_id
         self.bind_socket()
 
     def close_socket(self):
@@ -38,9 +39,10 @@ class NodesDirectory:
         # @todo: Implement health check before discovery
         req_socket_url = config("REQ_SOCKET_URLS", cast=Csv())
         nodes_urls = config("NODES", cast=Csv())
+        nodes_id = config("NODES_ID", cast=Csv())
         nodes = []
-        for node_url, socket_url in zip(nodes_urls, req_socket_url):
-            nodes.append(Node(node_url, socket_url))
+        for node_id, node_url, socket_url in zip(nodes_id, nodes_urls, req_socket_url):
+            nodes.append(Node(node_id, node_url, socket_url))
         return nodes
 
     def send_json(self, *args, **kwargs):
@@ -60,6 +62,10 @@ class NodesDirectory:
         resp = self.nodes[self.next_node_index].socket.send_string(*args, **kwargs)
         self.increment_next_node_index()
         return resp
+
+    def publish_EOF(self):
+        for node in self.nodes:
+            node.socket.send_json({"EOF": True})
 
     def increment_next_node_index(self) -> None:
         self.next_node_index = (self.next_node_index + 1) % self.num_nodes

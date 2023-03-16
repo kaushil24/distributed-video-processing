@@ -14,7 +14,7 @@ class DbConfig:
     )
 
 
-engine = create_engine(DbConfig.SQLALCHEMY_DATABASE_URI, echo=True)
+engine = create_engine(DbConfig.SQLALCHEMY_DATABASE_URI, echo=False)
 
 Session = sessionmaker(bind=engine)
 session = scoped_session(Session)

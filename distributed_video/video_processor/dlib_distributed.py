@@ -7,6 +7,24 @@ import dlib
 import numpy as np
 from typing import Tuple
 from distributed_video.libs.utils import BlobStore
+from decouple import config
+import os
+import json
+
+
+class MyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(MyEncoder, self).default(obj)
+
+
+PROJECT_ROOT = config("DIST_VIDEO_PROJECT_ROOT")
 
 
 # initialise model from dat file path - model file url : https://github.com/italojs/facial-landmarks-recognition/blob/master/shape_predictor_68_face_landmarks.dat
@@ -66,7 +84,12 @@ def draw_delaunay(shape: np.ndarray, image: np.ndarray) -> np.ndarray:
 
 def dlib_main(image, frame_no, task_id):
     detector, predictor = initialise_model(
-        "/home/phani/Desktop/disributed/project/distributed-video-processing/distributed_video/assets/shape_predictor_68_face_landmarks.dat"
+        os.path.join(
+            PROJECT_ROOT,
+            "distributed_video",
+            "assets",
+            "shape_predictor_68_face_landmarks.dat",
+        )
     )
     # image = cv2.imread('/home/phani/Desktop/disributed/project/distributed-video-processing/distributed_video/assets/face.jpg')
     shape, image = get_coordinates(detector, predictor, image)
@@ -74,10 +97,11 @@ def dlib_main(image, frame_no, task_id):
         output = draw_delaunay(shape, image)
     else:
         output = image
-    output_bytes = output.tobytes()
+    # output_bytes = output.tobytes()
     filename = str(frame_no) + ".jpg"
-    imagewriter = BlobStore()
-    imagewriter.write_file(file=output_bytes, file_name=filename, task=task_id)
-    coordinates = dict(enumerate(shape.flatten(), 1))
-
+    bs = BlobStore()
+    bs.write_frame(filename, task_id, output)
+    # bs.write_file(file=output_bytes, file_name=filename, task=task_id)
+    coordinates = json.dumps(shape, cls=MyEncoder)
+    # coordinates = {"hello": "world"}
     return coordinates
