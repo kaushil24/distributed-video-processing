@@ -1,5 +1,4 @@
 from pathlib import Path
-from werkzeug.datastructures import FileStorage
 from decouple import config
 import os
 
@@ -9,8 +8,9 @@ BLOB_STORE_TYPE = "local"
 
 class MediaUtils:
     @staticmethod
-    def save_video(video_file: FileStorage, path: Path) -> str:
-        video_file.save(path)
+    def save_video(video_file: bytes, path: Path) -> str:
+        with open(path, "wb") as out_file:  # open for [w]riting as [b]inary
+            out_file.write(video_file)
         return path
 
 
