@@ -67,6 +67,35 @@
           >
             Start Process
           </button>
+          <div
+            id="stats"
+            style="display: none; width: 100%; flex-direction: column"
+          >
+            <h4 id="task_id"></h4>
+            <button
+              style="display: block; width: 125px; font-size: small"
+              id="check-video"
+              onclick="checkOPFile()"
+              type="button"
+              class="btn btn-primary btn-lg px-4 gap-3"
+            >
+              check for output
+            </button>
+            <div
+              id="stats-details"
+              style="width: 100%; display: none; flex-direction: column"
+            >
+              <li id="nodes-list"></li>
+              <li id="avg-time-per-node"></li>
+              <li id="get-coordinates-of-frame"></li>
+              <li id="task-stats"></li>
+              <li id="tasks-info-from-celery"></li>
+              <br />
+
+              <br />
+              <h3 id="video"></h3>
+            </div>
+          </div>
         </div>
       </div>
     </main>
@@ -86,6 +115,7 @@
   </body>
 
   <script>
+    let task_id = "";
     const fileInput = document.querySelector('input[id="fileUpload"]');
     const reader = new FileReader();
     document.getElementById("uploadButton").style.display = "none";
@@ -99,22 +129,75 @@
         document.getElementById("uploadButton").style.display = "block";
       }
     });
-
+    // loadStats("749f3fa5-cecf-49cc-8797-aef591d2e2d7");
+    function loadStats(taskid) {
+      task_id = taskid;
+      document.getElementById("stats").style.display = "flex";
+      document.getElementById("task_id").innerHTML = "Task ID: " + task_id;
+    }
     function uploadFile() {
       data = {
         file: reader.result,
-        filename: selectedFile.name
-      }
-      fetch('/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(data)
+        filename: selectedFile.name,
+      };
+      fetch("/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .then((data) => loadStats(data.task_id))
+        .catch((error) => console.error(error));
+    }
+
+    function checkOPFile() {
+      console.log(task_id);
+      let videoCreated = "error";
+      const path = "/check-video/" + task_id;
+      fetch(path, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          videoCreated = data.status;
+          if (videoCreated == "success") {
+            console.log(videoCreated);
+            document.getElementById("stats-details").style.display = "flex";
+
+            document.getElementById("video").innerHTML =
+              '<a href="http://localhost:5000/video/' +
+              task_id +
+              '" target="_blank">download video</a>';
+
+            document.getElementById("nodes-list").innerHTML =
+              '<a href="http://localhost:5000/nodes-list" target="_blank">get details of all nodes</a>';
+            document.getElementById("avg-time-per-node").innerHTML =
+              '<a href="http://localhost:5000/node-stats/1/' +
+              task_id +
+              '" target="_blank">average time per frame of node 1</a> &emsp; <a href="http://localhost:5000/node-stats/2/' +
+              task_id +
+              '" target="_blank">average time per frame of node 2</a>';
+            document.getElementById("get-coordinates-of-frame").innerHTML =
+              '<a href="http://localhost:5000/coordinates-frame/' +
+              task_id +
+              '/20" target="_blank">get coordinates info of a frame</a>';
+            document.getElementById("task-stats").innerHTML =
+              '<a href="http://localhost:5000/task-stats/' +
+              task_id +
+              '" target="_blank">get task stats</a>';
+            // document.getElementById("get-stats-node").innerHTML = "<a href=\"http://localhost:5000/get-stats-node/"+task_id+"\" target=\"_blank\">get node stats</a>"
+            document.getElementById("tasks-info-from-celery").innerHTML =
+              '<a href="http://localhost:5000/tasksInfoFromCelery/' +
+              task_id +
+              '" target="_blank">get task info from celery</a>';
+          }
         })
-        .then(response => response.json())
-        .then(data => console.log(data))
-        .catch(error => console.error(error));
+        .catch((error) => console.error(error));
     }
   </script>
 </html>

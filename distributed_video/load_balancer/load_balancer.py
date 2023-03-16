@@ -183,5 +183,13 @@ def dissect_video(self, file_name: str):
         if "pending" not in node_status.values():
             break
 
-    status = aggregator(task_id=task_id, total_frames=processed_frames)
-    return status
+    _ = aggregator(task_id=task_id, total_frames=processed_frames)
+    self.update_state(
+        state="COMPLETED",
+        meta={
+            "sent_frames": currentframe,
+            "total_frames": total_frames,
+            "processed_frames": processed_frames,
+        },
+    )
+    # return "SUCCESS"

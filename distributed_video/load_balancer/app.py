@@ -7,15 +7,12 @@ from distributed_video.load_balancer.load_balancer import dissect_video
 from distributed_video.libs.utils import MediaUtils
 import os
 from pathlib import Path
-from distributed_video.db.models import FrameInfoModel
-from typing import List
 from flask import jsonify
 from celery.result import AsyncResult
 from celery_worker import celery_app
 import re
 import base64
-from distributed_video.db.models import FrameInfoModel
-
+from flask import Flask, jsonify
 
 app = Flask("load_balancer")
 
@@ -53,18 +50,7 @@ def test1(task: str):
     print("-------------", task)
     result = AsyncResult(task, app=celery_app)
     print("--------------", result.info)
-    return jsonify(result.info)
-
-
-@app.route("/get-stats-node/<task>", methods=["GET"])
-def get_stats(task: str):
-    # @todo: Add logic to return different statistics
-    model_query: List[FrameInfoModel] = FrameInfoModel.query().filter_by(task=task)
-    response = []
-    for frame_info in model_query:
-        response.append({"task": frame_info.task})
-
-    # @todo: How to use flask's Response?
+    response = {"status": result.status, "info": result.info}
     return jsonify(response)
 
 
