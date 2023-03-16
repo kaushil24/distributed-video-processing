@@ -81,6 +81,8 @@
             >
               check for output
             </button>
+            <li id="all-tasks"></li>
+            <li id="tasks-info-from-celery"></li>
             <div
               id="stats-details"
               style="width: 100%; display: none; flex-direction: column"
@@ -89,7 +91,7 @@
               <li id="avg-time-per-node"></li>
               <li id="get-coordinates-of-frame"></li>
               <li id="task-stats"></li>
-              <li id="tasks-info-from-celery"></li>
+
               <br />
 
               <br />
@@ -134,6 +136,13 @@
       task_id = taskid;
       document.getElementById("stats").style.display = "flex";
       document.getElementById("task_id").innerHTML = "Task ID: " + task_id;
+      document.getElementById("tasks-info-from-celery").innerHTML =
+        '<a href="http://localhost:5000/tasksInfoFromCelery/' +
+        task_id +
+        '" target="_blank">get task info from celery</a>';
+      document.getElementById("all-tasks").innerHTML =
+        '<a href="http://localhost:5000/get-all-tasks/' +
+        '" target="_blank">get all tasks</a>';
     }
     function uploadFile() {
       data = {
@@ -191,10 +200,6 @@
               task_id +
               '" target="_blank">get task stats</a>';
             // document.getElementById("get-stats-node").innerHTML = "<a href=\"http://localhost:5000/get-stats-node/"+task_id+"\" target=\"_blank\">get node stats</a>"
-            document.getElementById("tasks-info-from-celery").innerHTML =
-              '<a href="http://localhost:5000/tasksInfoFromCelery/' +
-              task_id +
-              '" target="_blank">get task info from celery</a>';
           }
         })
         .catch((error) => console.error(error));

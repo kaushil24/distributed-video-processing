@@ -148,5 +148,15 @@ def get_video(taskid):
     return send_file(path, mimetype="video/avi")
 
 
+@app.route("/get-all-tasks/", methods=["GET"])
+def get_tasks():
+    # @todo: Add logic to return different statistics
+    tasks = session.query(FrameInfoModel.task).distinct()  # .values()
+    # print(tasks)
+    tasks = [str(i) for i in tasks]
+    # @todo: How to use flask's Response?
+    return jsonify({"tasks": tasks})
+
+
 if __name__ == "__main__":
     app.run(debug=True)
