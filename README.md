@@ -1,4 +1,30 @@
 # distributed-video-processing
+- Distributed Video Processing is a system designed to to apply face filters in a distributed and parallelized manner. The project consists of three key components: a Load Balancer, Nodes (microservices), and an Aggregator.
+
+### Key Components
+1. Load Balancer:
+  - Receives video input.
+  - Breaks down the video into individual frames.
+  - Distributes frames to multiple nodes for parallel processing.
+2. Nodes (Microservices):
+  - Receive individual frames from the load balancer.
+  - Apply face filters independently.
+  - Operate in parallel for efficient processing.
+
+3. Aggregator (Microservice):
+  - Gathers processed frames from all nodes.
+  - Merges frames into the final video with applied face filters.
+
+This microservices-based architecture ensures modularity, scalability, and improved performance, making it easy to update and scale specific components independently. The result is a streamlined process that efficiently enhances video content with face filters.
+
+### High level overview
+[High Level Overview](https://media.discordapp.net/attachments/1119444495071719497/1192736607984435210/high-level-architecture.png?ex=65aa2987&is=6597b487&hm=cd7fdbbd247c36adcfc1aa2b7de7fbf13fea0d34bcdc79ae485d5b1e3eb515fc&=&format=webp&quality=lossless&width=1634&height=618)
+
+### Networking Overview
+[Networking Overview](https://media.discordapp.net/attachments/1119444495071719497/1192736608408043581/node-discovery-networking.png?ex=65aa2987&is=6597b487&hm=76c2bdce026df212bd60ac23e045838ec18f620606b36834831666e5b93cdbb1&=&format=webp&quality=lossless&width=1314&height=1008)
+
+### Code Organization
+[Code Organization](https://media.discordapp.net/attachments/1119444495071719497/1192736607728586893/code-organization.png?ex=65aa2987&is=6597b487&hm=68fbe10c6533e953a498145cf93d344f3722519ed7bc5e73ee8b522823cb34b1&=&format=webp&quality=lossless&width=1002&height=1008)
 
 ## dev setup
 - Install rabbit mq. This message broker is used by celery
