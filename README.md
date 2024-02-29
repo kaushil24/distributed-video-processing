@@ -21,7 +21,7 @@ This microservices-based architecture ensures modularity, scalability, and impro
 ![High Level Overview](https://media.discordapp.net/attachments/1119444495071719497/1192736607984435210/high-level-architecture.png?ex=65aa2987&is=6597b487&hm=cd7fdbbd247c36adcfc1aa2b7de7fbf13fea0d34bcdc79ae485d5b1e3eb515fc&=&format=webp&quality=lossless&width=1634&height=618)
 
 ### Networking Overview
-![Networking Overview](https://media.discordapp.net/attachments/1119444495071719497/1192736608408043581/node-discovery-networking.png?ex=65aa2987&is=6597b487&hm=76c2bdce026df212bd60ac23e045838ec18f620606b36834831666e5b93cdbb1&=&format=webp&quality=lossless&width=1314&height=1008)
+![image](https://gist.github.com/assets/39802957/35e9fd8f-1cf8-4e88-a63a-cb6491e48204)
 
 ### Code Organization
 ![Code Organization](https://media.discordapp.net/attachments/1119444495071719497/1192736607728586893/code-organization.png?ex=65aa2987&is=6597b487&hm=68fbe10c6533e953a498145cf93d344f3722519ed7bc5e73ee8b522823cb34b1&=&format=webp&quality=lossless&width=1002&height=1008)
