@@ -21,7 +21,7 @@ This microservices-based architecture ensures modularity, scalability, and impro
 ![High Level Overview](https://raw.githubusercontent.com/kaushil24/distributed-video-processing/main/high-level-architecture.png)
 
 ### Networking Overview
-![image](https://github-production-user-asset-6210df.s3.amazonaws.com/39802957/309045081-35e9fd8f-1cf8-4e88-a63a-cb6491e48204.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20240229%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240229T191002Z&X-Amz-Expires=300&X-Amz-Signature=b30609a7efe55d0e5a922120b915f6a474e3d057dff601f1abf054dc82b42c55&X-Amz-SignedHeaders=host&actor_id=0&key_id=0&repo_id=0)
+![image](https://raw.githubusercontent.com/kaushil24/distributed-video-processing/main/node-discovery-networking.png)
 
 ### Code Organization
 ![Code Organization](https://raw.githubusercontent.com/kaushil24/distributed-video-processing/main/code-organization.png)
