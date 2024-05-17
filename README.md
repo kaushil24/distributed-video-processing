@@ -18,7 +18,7 @@
 This microservices-based architecture ensures modularity, scalability, and improved performance, making it easy to update and scale specific components independently. The result is a streamlined process that efficiently enhances video content with face filters.
 
 ### High level overview
-![High Level Overview](https://media.discordapp.net/attachments/1119444495071719497/1192736607984435210/high-level-architecture.png?ex=65aa2987&is=6597b487&hm=cd7fdbbd247c36adcfc1aa2b7de7fbf13fea0d34bcdc79ae485d5b1e3eb515fc&=&format=webp&quality=lossless&width=1634&height=618)
+![High Level Overview]([https://media.discordapp.net/attachments/1119444495071719497/1192736607984435210/high-level-architecture.png?ex=65aa2987&is=6597b487&hm=cd7fdbbd247c36adcfc1aa2b7de7fbf13fea0d34bcdc79ae485d5b1e3eb515fc&=&format=webp&quality=lossless&width=1634&height=618](https://raw.githubusercontent.com/kaushil24/distributed-video-processing/main/high-level-architecture.png))
 
 ### Networking Overview
 ![image](https://github-production-user-asset-6210df.s3.amazonaws.com/39802957/309045081-35e9fd8f-1cf8-4e88-a63a-cb6491e48204.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20240229%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240229T191002Z&X-Amz-Expires=300&X-Amz-Signature=b30609a7efe55d0e5a922120b915f6a474e3d057dff601f1abf054dc82b42c55&X-Amz-SignedHeaders=host&actor_id=0&key_id=0&repo_id=0)
